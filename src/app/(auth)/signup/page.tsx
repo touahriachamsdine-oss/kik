@@ -1,16 +1,20 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { Chrome, Facebook } from 'lucide-react';
+import { createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, FacebookAuthProvider, updateProfile } from 'firebase/auth';
+import { useAuth } from '@/firebase';
+import { useToast } from '@/hooks/use-toast';
+import { createUserProfile } from '@/firebase/auth/user-actions';
 
 import { Button } from '@/components/ui/button';
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -19,7 +23,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 const formSchema = z.object({
   fullName: z.string().min(2, { message: 'Name must be at least 2 characters.' }),
@@ -32,6 +36,10 @@ const formSchema = z.object({
 });
 
 export default function SignupPage() {
+  const auth = useAuth();
+  const router = useRouter();
+  const { toast } = useToast();
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -43,10 +51,69 @@ export default function SignupPage() {
     },
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values);
-    // TODO: Handle form submission
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    try {
+      const userCredential = await createUserWithEmailAndPassword(auth, values.email, values.password);
+      const user = userCredential.user;
+
+      // Update Firebase Auth profile
+      await updateProfile(user, { displayName: values.fullName });
+
+      // Create user document in Firestore
+      await createUserProfile(user.uid, {
+        name: values.fullName,
+        email: values.email,
+        phone: '', // Phone is not collected at signup
+        role: values.role,
+        profilePicture: user.photoURL || '',
+      });
+
+      toast({
+        title: 'Account Created',
+        description: "Welcome to rahalati+!",
+      });
+      router.push('/dashboard');
+    } catch (error: any) {
+      console.error('Signup Error:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Sign-up Failed',
+        description: error.message || 'An unexpected error occurred.',
+      });
+    }
   }
+
+  const handleSocialLogin = async (provider: 'google' | 'facebook') => {
+    const authProvider = provider === 'google' ? new GoogleAuthProvider() : new FacebookAuthProvider();
+    try {
+      const result = await signInWithPopup(auth, authProvider);
+      const user = result.user;
+
+      // Create user profile if it's a new user (social sign-up)
+      // For social, we default the role to traveler.
+      await createUserProfile(user.uid, {
+        name: user.displayName || 'New User',
+        email: user.email || '',
+        phone: user.phoneNumber || '',
+        role: 'traveler',
+        profilePicture: user.photoURL || '',
+      });
+
+      toast({
+        title: 'Sign-up Successful',
+        description: `Welcome, ${user.displayName}!`,
+      });
+      router.push('/dashboard');
+    } catch (error: any) {
+      console.error(`${provider} Login Error:`, error);
+      toast({
+        variant: 'destructive',
+        title: 'Sign-up Failed',
+        description: error.message || `Could not sign up with ${provider}.`,
+      });
+    }
+  };
+
 
   return (
     <Card className="w-full max-w-md">
@@ -69,9 +136,9 @@ export default function SignupPage() {
                     <RadioGroup
                       onValueChange={field.onChange}
                       defaultValue={field.value}
-                      className="flex flex-col space-y-1"
+                      className="flex space-x-4"
                     >
-                      <FormItem className="flex items-center space-x-3 space-y-0">
+                      <FormItem className="flex items-center space-x-2 space-y-0">
                         <FormControl>
                           <RadioGroupItem value="traveler" />
                         </FormControl>
@@ -79,7 +146,7 @@ export default function SignupPage() {
                           Traveler
                         </FormLabel>
                       </FormItem>
-                      <FormItem className="flex items-center space-x-3 space-y-0">
+                      <FormItem className="flex items-center space-x-2 space-y-0">
                         <FormControl>
                           <RadioGroupItem value="agency" />
                         </FormControl>
@@ -173,8 +240,8 @@ export default function SignupPage() {
           </div>
         </div>
         <div className="grid grid-cols-2 gap-4">
-          <Button variant="outline"><Chrome className="mr-2 h-4 w-4" /> Google</Button>
-          <Button variant="outline"><Facebook className="mr-2 h-4 w-4" /> Facebook</Button>
+          <Button variant="outline" onClick={() => handleSocialLogin('google')}><Chrome className="mr-2 h-4 w-4" /> Google</Button>
+          <Button variant="outline" onClick={() => handleSocialLogin('facebook')}><Facebook className="mr-2 h-4 w-4" /> Facebook</Button>
         </div>
         <div className="mt-6 text-center text-sm">
           Already have an account?{' '}

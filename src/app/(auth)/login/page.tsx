@@ -1,10 +1,15 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { Chrome, Facebook } from 'lucide-react';
+import { signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, FacebookAuthProvider } from 'firebase/auth';
+import { useAuth } from '@/firebase';
+import { useToast } from '@/hooks/use-toast';
+import { createUserProfile } from '@/firebase/auth/user-actions';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -24,6 +29,10 @@ const formSchema = z.object({
 });
 
 export default function LoginPage() {
+  const auth = useAuth();
+  const router = useRouter();
+  const { toast } = useToast();
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -32,10 +41,53 @@ export default function LoginPage() {
     },
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values);
-    // TODO: Handle form submission
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    try {
+      await signInWithEmailAndPassword(auth, values.email, values.password);
+      toast({
+        title: 'Login Successful',
+        description: "Welcome back!",
+      });
+      router.push('/dashboard');
+    } catch (error: any) {
+      console.error('Login Error:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Login Failed',
+        description: error.message || 'An unexpected error occurred.',
+      });
+    }
   }
+
+  const handleSocialLogin = async (provider: 'google' | 'facebook') => {
+    const authProvider = provider === 'google' ? new GoogleAuthProvider() : new FacebookAuthProvider();
+    try {
+      const result = await signInWithPopup(auth, authProvider);
+      const user = result.user;
+      
+      // Create user profile if it's a new user
+      await createUserProfile(user.uid, {
+        name: user.displayName || 'New User',
+        email: user.email || '',
+        phone: user.phoneNumber || '',
+        role: 'traveler', // Default role for social signup
+        profilePicture: user.photoURL || '',
+      });
+
+      toast({
+        title: 'Login Successful',
+        description: `Welcome, ${user.displayName}!`,
+      });
+      router.push('/dashboard');
+    } catch (error: any) {
+      console.error(`${provider} Login Error:`, error);
+      toast({
+        variant: 'destructive',
+        title: 'Login Failed',
+        description: error.message || 'Could not sign in with Google.',
+      });
+    }
+  };
 
   return (
     <Card className="w-full max-w-sm">
@@ -95,8 +147,8 @@ export default function LoginPage() {
           </div>
         </div>
         <div className="grid grid-cols-2 gap-4">
-          <Button variant="outline"><Chrome className="mr-2 h-4 w-4" /> Google</Button>
-          <Button variant="outline"><Facebook className="mr-2 h-4 w-4" /> Facebook</Button>
+          <Button variant="outline" onClick={() => handleSocialLogin('google')}><Chrome className="mr-2 h-4 w-4" /> Google</Button>
+          <Button variant="outline" onClick={() => handleSocialLogin('facebook')}><Facebook className="mr-2 h-4 w-4" /> Facebook</Button>
         </div>
         <div className="mt-6 text-center text-sm">
           Don&apos;t have an account?{' '}
