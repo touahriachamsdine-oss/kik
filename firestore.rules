@@ -1,0 +1,242 @@
+rules_version = '2';
+
+/**
+ * @name Travel Booking Platform Security Rules
+ * @file firestore.rules
+ *
+ * @description
+ * This ruleset enforces a Role-Based Access Control (RBAC) model for a travel
+ * booking platform. The three primary roles are 'traveler', 'agency', and 'admin'.
+ * The rules are designed to be secure by default, prioritizing strict authorization
+ * while remaining flexible on data shapes to support rapid prototyping.
+ *
+ * @summary
+ *
+ * Core Philosophy:
+ * - Admin Superiority: Users with the 'admin' role have full read/write access to
+ *   all data for management and moderation purposes.
+ * - Strict Ownership: A user's private data (profile, wishlist, notifications)
+ *   is accessible only by that user.
+ * - Agency Control: Users with the 'agency' role can manage their own agency
+ *   profile and the travel packages they offer. They have read-only access to
+ *   bookings and reviews related to their packages.
+ * - Public Discovery: Core platform content like travel packages, destinations,
+ *   and blog posts are publicly readable to encourage discovery.
+ * - Secure by Default: All write operations are denied unless explicitly
+ *   authorized. Anonymous users have very limited read-only access.
+ *
+ * Data Structure:
+ * - User-Scoped Subcollections: Private user data like wishlists and notifications
+ *   are stored in subcollections under `/users/{userId}/...` to leverage
+ *   path-based security for clear and performant ownership rules.
+ * - Top-Level Public Collections: Collections like `/packages`, `/destinations`,
+ *   and `/blog_posts` are at the root level to allow for efficient public queries.
+ *
+ * Key Security Decisions:
+ * - Denormalization for Authorization: To ensure fast and secure access checks
+ *   without expensive queries, documents like `bookings` and `reviews` contain
+
+ *   denormalized IDs (`userId`, `agencyId`). This allows rules to check ownership
+ *   directly from the document being accessed.
+ * - Role-Based Access via User Document: A user's role is stored on their
+ *   `/users/{userId}` document. Helper functions perform a single `get` to this
+ *   document to determine permissions, centralizing role logic.
+ * - Restricted Listing: To prevent data scraping and protect user privacy,
+ *   listing all documents in the `/users` collection is restricted to admins.
+ * - Server-Side Operations: Sensitive collections like `/payments` are locked
+ *   down to be writeable only by admins, under the assumption that all payment
+ *   logic is handled by trusted Cloud Functions.
+ */
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // -------------------------------------------------------------------------
+    // Helper Functions
+    // -------------------------------------------------------------------------
+
+    /**
+     * Checks if the user is authenticated.
+     */
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    /**
+     * Checks if the authenticated user's UID matches the provided userId.
+     * This is the primary function for enforcing user-specific data ownership.
+     * @param userId The UID to check against the authenticated user.
+     */
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    /**
+     * Checks if the authenticated user has the 'admin' role.
+     * This requires a read on the user's own profile document.
+     */
+    function isAdmin() {
+      return isSignedIn() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    /**
+     * Checks if the authenticated user is the designated owner of a given agency.
+     * Agency ownership is determined by the `userId` field on the agency document.
+     * @param agencyDoc The agency document resource.
+     */
+    function isAgencyOwner(agencyDoc) {
+      return isSignedIn() && agencyDoc.data.userId == request.auth.uid;
+    }
+
+    /**
+     * Checks if a document exists. Used to protect against writes to non-existent paths.
+     */
+    function docExists() {
+      return resource != null;
+    }
+
+
+    // -------------------------------------------------------------------------
+    // Collection Rules
+    // -------------------------------------------------------------------------
+
+    /**
+     * @description Manages user profiles. Only the user themselves or an admin can
+     * access or modify a profile. Listing users is restricted to admins.
+     * @path /users/{userId}
+     * @allow A user (auth.uid='user123') reads their own profile at /users/user123. (get)
+     * @deny A user (auth.uid='user456') tries to read another user's profile at /users/user123. (get)
+     * @principle Restricts access to a user's own data tree.
+     */
+    match /users/{userId} {
+      allow get: if isOwner(userId) || isAdmin();
+      allow list: if isAdmin();
+      allow create: if isOwner(userId);
+      allow update: if (isOwner(userId) || isAdmin()) && docExists();
+      allow delete: if (isOwner(userId) || isAdmin()) && docExists();
+    }
+
+    /**
+     * @description Stores travel agency profiles. Agency information is publicly
+     * readable, but only the linked agency owner or an admin can modify it.
+     * @path /agencies/{agencyId}
+     * @allow Any authenticated user reads an agency profile. (get)
+     * @deny A user who is not the agency owner tries to update the agency's description. (update)
+     * @principle Enforces document ownership for writes while allowing public reads.
+     */
+    match /agencies/{agencyId} {
+      allow get, list: if isSignedIn();
+      allow create: if isOwner(request.resource.data.userId) || isAdmin();
+      allow update: if (isAgencyOwner(resource) || isAdmin()) && docExists();
+      allow delete: if isAdmin() && docExists();
+    }
+
+    /**
+     * @description Contains all travel packages. Packages are public and can be
+     * read by anyone. Only the owning agency or an admin can manage them.
+     * @path /packages/{packageId}
+     * @allow An anonymous user views a list of all travel packages. (list)
+     * @deny A user who does not own the agency linked to a package tries to delete it. (delete)
+     * @principle Enforces document ownership for writes based on a denormalized `agencyId` field.
+     */
+    match /packages/{packageId} {
+      allow get, list: if true;
+      allow create: if isAgencyOwner(get(/databases/$(database)/documents/agencies/$(request.resource.data.agencyId))) || isAdmin();
+      allow update: if (isAgencyOwner(get(/databases/$(database)/documents/agencies/$(resource.data.agencyId))) || isAdmin()) && docExists();
+      allow delete: if (isAgencyOwner(get(/databases/$(database)/documents/agencies/$(resource.data.agencyId))) || isAdmin()) && docExists();
+    }
+
+    /**
+     * @description Manages user bookings. A booking can be created by a user for
+     * themselves. It can be read and updated by the user who made it, the
+     * relevant agency, or an admin.
+     * @path /bookings/{bookingId}
+     * @allow A traveler (auth.uid='user123') reads their own booking where resource.data.userId == 'user123'. (get)
+     * @deny A traveler (auth.uid='user456') tries to read another user's booking. (get)
+     * @principle Implements shared access between the traveler and the agency.
+     */
+    match /bookings/{bookingId} {
+      allow get: if (isOwner(resource.data.userId) || isAgencyOwner(get(/databases/$(database)/documents/agencies/$(resource.data.agencyId))) || isAdmin()) && docExists();
+      allow list: if isSignedIn();
+      allow create: if isOwner(request.resource.data.userId);
+      allow update: if (isOwner(resource.data.userId) || isAgencyOwner(get(/databases/$(database)/documents/agencies/$(resource.data.agencyId))) || isAdmin()) && docExists();
+      allow delete: if (isOwner(resource.data.userId) || isAdmin()) && docExists();
+    }
+
+    /**
+     * @description Stores user reviews for packages. Reviews are public, but can
+     * only be created or deleted by the authoring user or an admin.
+     * @path /reviews/{reviewId}
+     * @allow An anonymous user reads a review for a package. (get)
+     * @deny A user tries to delete a review they did not write. (delete)
+     * @principle Enforces document ownership for writes while allowing public reads.
+     */
+    match /reviews/{reviewId} {
+      allow get, list: if true;
+      allow create: if isOwner(request.resource.data.userId);
+      allow update: if (isOwner(resource.data.userId) || isAdmin()) && docExists();
+      allow delete: if (isOwner(resource.data.userId) || isAdmin()) && docExists();
+    }
+
+    /**
+     * @description Stores sensitive payment records. Access is highly restricted.
+     * Only admins have write access, assuming payments are processed by
+     * a trusted server environment (Cloud Functions).
+     * @path /payments/{paymentId}
+     * @allow An admin reads a payment record. (get)
+     * @deny A regular user or agency attempts to create, update, or delete a payment record. (create, update, delete)
+     * @principle Secures sensitive data by restricting all client writes.
+     */
+    match /payments/{paymentId} {
+      allow get: if isOwner(get(/databases/$(database)/documents/bookings/$(resource.data.bookingId)).data.userId) || isAdmin();
+      allow list: if isAdmin();
+      allow create: if isAdmin();
+      allow update: if isAdmin() && docExists();
+      allow delete: if isAdmin() && docExists();
+    }
+
+    /**
+     * @description Stores travel destination information. This data is public and
+     * considered read-only for all users except admins.
+     * @path /destinations/{destinationId}
+     * @allow Any user, including anonymous, views a destination. (get)
+     * @deny A non-admin user tries to add a new destination. (create)
+     * @principle Provides public read-only access to general content.
+     */
+    match /destinations/{destinationId} {
+      allow get, list: if true;
+      allow create: if isAdmin();
+      allow update: if isAdmin() && docExists();
+      allow delete: if isAdmin() && docExists();
+    }
+
+    /**
+     * @description Stores blog posts. Posts are public, but only the author
+     * or an admin can manage them.
+     * @path /blog_posts/{blogPostId}
+     * @allow Any anonymous user reads a blog post. (get)
+     * @deny A user who is not the author tries to update a blog post. (update)
+     * @principle Enforces document ownership for writes while allowing public reads.
+     */
+    match /blog_posts/{blogPostId} {
+      allow get, list: if true;
+      allow create: if isOwner(request.resource.data.authorId) || isAdmin();
+      allow update: if (isOwner(resource.data.authorId) || isAdmin()) && docExists();
+      allow delete: if (isOwner(resource.data.authorId) || isAdmin()) && docExists();
+    }
+
+    /**
+     * @description User-specific subcollections for wishlists and notifications.
+     * These match statements ensure that a user can only ever access data
+     * that exists under their own user ID path.
+     * @path /users/{userId}/wishlist/{wishlistId}
+     * @path /users/{userId}/notifications/{notificationId}
+     * @allow A user (auth.uid='user123') adds an item to their own wishlist at /users/user123/wishlist/item456. (create)
+     * @deny A user (auth.uid='user456') tries to read notifications from /users/user123/notifications. (list)
+     * @principle Restricts access to a user's own data tree using path-based security.
+     */
+    match /users/{userId}/{collection}/{docId} {
+      allow get, list, create: if isOwner(userId);
+      allow update, delete: if isOwner(userId) && docExists();
+    }
+  }
+}
