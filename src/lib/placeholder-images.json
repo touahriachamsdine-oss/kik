@@ -1,3 +1,82 @@
 {
-  "placeholderImages": []
+  "placeholderImages": [
+    {
+      "id": "hero-background",
+      "description": "A stunning, wide-angle shot of a beautiful travel destination, suitable for a hero background.",
+      "imageUrl": "https://images.unsplash.com/photo-1433838552652-f9a46b332c40?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHx0cmF2ZWwlMjBsYW5kc2NhcGV8ZW58MHx8fHwxNzY0OTcwOTExfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "travel landscape"
+    },
+    {
+      "id": "algiers-casbah",
+      "description": "A vibrant street scene from the Casbah of Algiers.",
+      "imageUrl": "https://images.unsplash.com/photo-1754047699587-7fe709b98b69?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8YWxnaWVycyUyMHN0cmVldHxlbnwwfHx8fDE3NjUwNDY1ODZ8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "algiers street"
+    },
+    {
+      "id": "sahara-desert",
+      "description": "Camel caravan in the Sahara desert at sunset.",
+      "imageUrl": "https://images.unsplash.com/photo-1559586616-361e18714958?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxzYWhhcmElMjBkZXNlcnR8ZW58MHx8fHwxNzY1MDQ2NTg2fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "sahara desert"
+    },
+    {
+      "id": "coastal-city",
+      "description": "A scenic view of a coastal city in Algeria.",
+      "imageUrl": "https://images.unsplash.com/photo-1665356180747-591be787f18d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxjb2FzdGFsJTIwY2l0eXxlbnwwfHx8fDE3NjQ5NTU1ODh8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "coastal city"
+    },
+    {
+      "id": "roman-ruins",
+      "description": "Ancient Roman ruins in Timgad, Algeria.",
+      "imageUrl": "https://images.unsplash.com/photo-1595168318069-217391d91943?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxyb21hbiUyMHJ1aW5zfGVufDB8fHx8MTc2NTA0NjU4Nnww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "roman ruins"
+    },
+    {
+      "id": "paris-eiffel",
+      "description": "The Eiffel Tower in Paris, France.",
+      "imageUrl": "https://images.unsplash.com/photo-1699727772686-623845bd854f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxwYXJpcyUyMGVpZmZlbHxlbnwwfHx8fDE3NjUwMTI5Mjl8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "paris eiffel"
+    },
+    {
+      "id": "istanbul-mosque",
+      "description": "A grand mosque in Istanbul, Turkey.",
+      "imageUrl": "https://images.unsplash.com/photo-1567712595315-545da0d341b2?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxpc3RhbmJ1bCUyMG1vc3F1ZXxlbnwwfHx8fDE3NjUwNDAzMjB8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "istanbul mosque"
+    },
+    {
+      "id": "user-avatar-1",
+      "description": "Avatar for a user testimonial.",
+      "imageUrl": "https://images.unsplash.com/photo-1540569014015-19a7be504e3a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxwZXJzb24lMjBwb3J0cmFpdHxlbnwwfHx8fDE3NjUwMjYxNTV8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "person portrait"
+    },
+    {
+      "id": "user-avatar-2",
+      "description": "Avatar for a user testimonial.",
+      "imageUrl": "https://images.unsplash.com/photo-1609505848912-b7c3b8b4beda?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw2fHx3b21hbiUyMHBvcnRyYWl0fGVufDB8fHx8MTc2NTAxNzM4OHww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "woman portrait"
+    },
+    {
+      "id": "user-avatar-3",
+      "description": "Avatar for a user testimonial.",
+      "imageUrl": "https://images.unsplash.com/photo-1607031542107-f6f46b5d54e9?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxtYW4lMjBwb3J0cmFpdHxlbnwwfHx8fDE3NjQ5NzY5OTN8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "man portrait"
+    },
+    {
+      "id": "detail-gallery-1",
+      "description": "Image for a travel package detail gallery.",
+      "imageUrl": "https://images.unsplash.com/photo-1551646256-d2f1777884b4?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHx0cmF2ZWwlMjBkZXRhaWx8ZW58MHx8fHwxNzY1MDQ2NTg2fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "travel detail"
+    },
+    {
+      "id": "detail-gallery-2",
+      "description": "Image for a travel package detail gallery.",
+      "imageUrl": "https://images.unsplash.com/photo-1621847468516-1ed5d0df56fe?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxuYXR1cmUlMjBsYW5kc2NhcGV8ZW58MHx8fHwxNzY0OTkxMDA3fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "nature landscape"
+    },
+    {
+      "id": "detail-gallery-3",
+      "description": "Image for a travel package detail gallery.",
+      "imageUrl": "https://images.unsplash.com/photo-1643875396528-5770014cefdf?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHxjaXR5JTIwYXJjaGl0ZWN0dXJlfGVufDB8fHx8MTc2NTAxNzA1Nnww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "city architecture"
+    }
+  ]
 }
