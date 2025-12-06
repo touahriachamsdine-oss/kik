@@ -1,0 +1,20 @@
+{
+  "Header": {
+    "destinations": "الوجهات",
+    "packages": "الباقات",
+    "aiPlanner": "مخطط الرحلات الذكي",
+    "reviews": "التقييمات",
+    "login": "تسجيل الدخول",
+    "signUp": "إنشاء حساب",
+    "dashboard": "لوحة التحكم",
+    "profile": "الملف الشخصي",
+    "logout": "تسجيل الخروج",
+    "toggleTheme": "تغيير السمة",
+    "light": "فاتح",
+    "dark": "داكن",
+    "system": "النظام",
+    "en": "English",
+    "fr": "Français",
+    "ar": "العربية"
+  }
+}

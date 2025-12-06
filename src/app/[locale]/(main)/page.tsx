@@ -1,10 +1,9 @@
-
 import Image from 'next/image';
 import Link from 'next/link';
 import { Search, MapPin, Calendar, Users, DollarSign, ChevronRight, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { PackageCard } from '@/components/package-card';
 import { getPackages, getReviewsForPackage } from '@/lib/data';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
@@ -145,7 +144,7 @@ export default async function HomePage() {
                     <RatingStars rating={review.rating} />
                     <p className="mt-4 text-muted-foreground">"{review.comment}"</p>
                   </CardContent>
-                  <CardHeader className="flex-row items-center gap-4">
+                  <div className="flex-row items-center gap-4 p-6 pt-0">
                     <Avatar>
                       <AvatarImage src={avatar?.imageUrl} alt={review.user.name} data-ai-hint={avatar?.imageHint} />
                       <AvatarFallback>{review.user.name.charAt(0)}</AvatarFallback>
@@ -154,7 +153,7 @@ export default async function HomePage() {
                       <p className="font-semibold">{review.user.name}</p>
                       <p className="text-sm text-muted-foreground">Traveled in {new Date(review.date).toLocaleString('default', { month: 'long', year: 'numeric' })}</p>
                     </div>
-                  </CardHeader>
+                  </div>
                 </Card>
               )
             })}

@@ -1,4 +1,3 @@
-
 import { PackageCard } from "@/components/package-card";
 import { getPackages } from "@/lib/data";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";

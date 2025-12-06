@@ -1,4 +1,3 @@
-
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import { getPackageById, getAgencyById, getReviewsForPackage } from '@/lib/data';
@@ -119,7 +118,7 @@ export default async function PackageDetailPage({ params }: { params: { id: stri
                             <p className="font-semibold">{review.user.name}</p>
                             <RatingStars rating={review.rating}/>
                           </div>
-                          <p className="text-sm text-muted-foreground">{review.createdAt.toDate().toLocaleDateString()}</p>
+                          <p className="text-sm text-muted-foreground">{review.createdAt.toLocaleDateString()}</p>
                           <p className="mt-2 text-foreground/80">{review.comment}</p>
                         </div>
                       </div>

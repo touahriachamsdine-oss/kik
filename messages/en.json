@@ -1,0 +1,20 @@
+{
+  "Header": {
+    "destinations": "Destinations",
+    "packages": "Packages",
+    "aiPlanner": "AI Planner",
+    "reviews": "Reviews",
+    "login": "Login",
+    "signUp": "Sign Up",
+    "dashboard": "Dashboard",
+    "profile": "Profile",
+    "logout": "Log out",
+    "toggleTheme": "Toggle theme",
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System",
+    "en": "English",
+    "fr": "Français",
+    "ar": "العربية"
+  }
+}
