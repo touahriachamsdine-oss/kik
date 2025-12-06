@@ -10,14 +10,14 @@
           "type": "string",
           "description": "Unique identifier for the user."
         },
+        "name": {
+          "type": "string",
+          "description": "User's full name."
+        },
         "email": {
           "type": "string",
           "description": "User's email address.",
           "format": "email"
-        },
-        "name": {
-          "type": "string",
-          "description": "User's full name."
         },
         "phone": {
           "type": "string",
@@ -25,7 +25,8 @@
         },
         "role": {
           "type": "string",
-          "description": "User's role (traveler, agency, or admin)."
+          "description": "User's role (traveler, agency, or admin).",
+          "enum": ["traveler", "agency", "admin"]
         },
         "profilePicture": {
           "type": "string",
@@ -49,8 +50,8 @@
       },
       "required": [
         "id",
-        "email",
         "name",
+        "email",
         "phone",
         "role",
         "profilePicture",
@@ -111,18 +112,19 @@
           "description": "Average rating of the agency."
         },
         "totalReviews": {
-          "type": "number",
+          "type": "integer",
           "description": "Number of reviews for the agency."
         },
         "verified": {
           "type": "boolean",
-          "description": "Indicates whether the agency is verified."
+          "description": "Indicates whether the agency is verified by an admin."
         },
         "verificationDocuments": {
           "type": "array",
           "description": "Array of URLs to the agency's verification documents.",
           "items": {
-            "type": "string"
+            "type": "string",
+            "format": "uri"
           }
         },
         "createdAt": {
@@ -142,10 +144,7 @@
         "country",
         "description",
         "logo",
-        "rating",
-        "totalReviews",
         "verified",
-        "verificationDocuments",
         "createdAt"
       ]
     },
@@ -155,104 +154,28 @@
       "type": "object",
       "description": "Represents a travel package offered by an agency.",
       "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the package."
-        },
-        "agencyId": {
-          "type": "string",
-          "description": "Reference to Agency. (Relationship: Agency 1:N Package) Unique identifier for the agency offering the package."
-        },
-        "title": {
-          "type": "string",
-          "description": "Title of the package."
-        },
-        "description": {
-          "type": "string",
-          "description": "Description of the package."
-        },
-        "destination": {
-          "type": "string",
-          "description": "Destination of the package."
-        },
-        "durationDays": {
-          "type": "number",
-          "description": "Duration of the package in days."
-        },
-        "price": {
-          "type": "number",
-          "description": "Price of the package."
-        },
-        "maxParticipants": {
-          "type": "number",
-          "description": "Maximum number of participants allowed for the package."
-        },
-        "category": {
-          "type": "string",
-          "description": "Category of the package (e.g., family, adventure)."
-        },
-        "includes": {
-          "type": "array",
-          "description": "Array of items included in the package.",
-          "items": {
-            "type": "string"
-          }
-        },
-        "excludes": {
-          "type": "array",
-          "description": "Array of items excluded from the package.",
-          "items": {
-            "type": "string"
-          }
-        },
-        "images": {
-          "type": "array",
-          "description": "Array of URLs to the package images.",
-          "items": {
-            "type": "string"
-          }
-        },
-        "rating": {
-          "type": "number",
-          "description": "Average rating of the package."
-        },
-        "featured": {
-          "type": "boolean",
-          "description": "Indicates whether the package is featured."
-        },
-        "status": {
-          "type": "string",
-          "description": "Status of the package (active, inactive, draft)."
-        },
-        "createdAt": {
-          "type": "string",
-          "description": "Timestamp of when the package was created.",
-          "format": "date-time"
-        },
-        "updatedAt": {
-          "type": "string",
-          "description": "Timestamp of when the package was last updated.",
-          "format": "date-time"
-        }
+        "id": { "type": "string" },
+        "agencyId": { "type": "string" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "destination": { "type": "string" },
+        "durationDays": { "type": "integer" },
+        "price": { "type": "number" },
+        "maxParticipants": { "type": "integer" },
+        "category": { "type": "string" },
+        "includes": { "type": "array", "items": { "type": "string" } },
+        "excludes": { "type": "array", "items": { "type": "string" } },
+        "images": { "type": "array", "items": { "type": "string", "format": "uri" } },
+        "rating": { "type": "number" },
+        "featured": { "type": "boolean" },
+        "status": { "type": "string", "enum": ["active", "inactive", "draft"] },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
       },
       "required": [
-        "id",
-        "agencyId",
-        "title",
-        "description",
-        "destination",
-        "durationDays",
-        "price",
-        "maxParticipants",
-        "category",
-        "includes",
-        "excludes",
-        "images",
-        "rating",
-        "featured",
-        "status",
-        "createdAt",
-        "updatedAt"
+        "id", "agencyId", "title", "description", "destination", "durationDays",
+        "price", "maxParticipants", "category", "includes", "excludes", "images",
+        "featured", "status", "createdAt", "updatedAt"
       ]
     },
     "Booking": {
@@ -261,82 +184,24 @@
       "type": "object",
       "description": "Represents a booking made by a user for a travel package.",
       "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the booking."
-        },
-        "userId": {
-          "type": "string",
-          "description": "Reference to User. (Relationship: User 1:N Booking) Unique identifier for the user who made the booking."
-        },
-        "packageId": {
-          "type": "string",
-          "description": "Reference to Package. (Relationship: Package 1:N Booking) Unique identifier for the package being booked."
-        },
-        "agencyId": {
-          "type": "string",
-          "description": "Reference to Agency. (Relationship: Agency 1:N Booking)  Unique identifier for the agency offering the package."
-        },
-        "bookingDate": {
-          "type": "string",
-          "description": "Date when the booking was made.",
-          "format": "date-time"
-        },
-        "travelDate": {
-          "type": "string",
-          "description": "Date when the travel is scheduled to begin.",
-          "format": "date-time"
-        },
-        "numTravelers": {
-          "type": "number",
-          "description": "Number of travelers included in the booking."
-        },
-        "totalPrice": {
-          "type": "number",
-          "description": "Total price of the booking."
-        },
-        "status": {
-          "type": "string",
-          "description": "Status of the booking (pending, confirmed, cancelled, completed)."
-        },
-        "paymentStatus": {
-          "type": "string",
-          "description": "Status of the payment for the booking (pending, paid, refunded)."
-        },
-        "paymentMethod": {
-          "type": "string",
-          "description": "Method of payment used for the booking."
-        },
-        "paymentId": {
-          "type": "string",
-          "description": "Reference to Payment. (Relationship: Payment 1:1 Booking) Unique identifier for the payment associated with the booking."
-        },
-        "createdAt": {
-          "type": "string",
-          "description": "Timestamp of when the booking was created.",
-          "format": "date-time"
-        },
-        "updatedAt": {
-          "type": "string",
-          "description": "Timestamp of when the booking was last updated.",
-          "format": "date-time"
-        }
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "packageId": { "type": "string" },
+        "agencyId": { "type": "string" },
+        "bookingDate": { "type": "string", "format": "date-time" },
+        "travelDate": { "type": "string", "format": "date-time" },
+        "numTravelers": { "type": "integer" },
+        "totalPrice": { "type": "number" },
+        "status": { "type": "string", "enum": ["pending", "confirmed", "cancelled", "completed"] },
+        "paymentStatus": { "type": "string", "enum": ["pending", "paid", "refunded"] },
+        "paymentMethod": { "type": "string" },
+        "paymentId": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
       },
       "required": [
-        "id",
-        "userId",
-        "packageId",
-        "agencyId",
-        "bookingDate",
-        "travelDate",
-        "numTravelers",
-        "totalPrice",
-        "status",
-        "paymentStatus",
-        "paymentMethod",
-        "paymentId",
-        "createdAt",
-        "updatedAt"
+        "id", "userId", "packageId", "agencyId", "bookingDate", "travelDate",
+        "numTravelers", "totalPrice", "status", "paymentStatus", "createdAt", "updatedAt"
       ]
     },
     "Review": {
@@ -345,63 +210,18 @@
       "type": "object",
       "description": "Represents a review of a travel package or agency.",
       "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the review."
-        },
-        "userId": {
-          "type": "string",
-          "description": "Reference to User. (Relationship: User 1:N Review) Unique identifier for the user who wrote the review."
-        },
-        "packageId": {
-          "type": "string",
-          "description": "Reference to Package. (Relationship: Package 1:N Review) Unique identifier for the package being reviewed."
-        },
-        "agencyId": {
-          "type": "string",
-          "description": "Reference to Agency. (Relationship: Agency 1:N Review) Unique identifier for the agency being reviewed."
-        },
-        "bookingId": {
-          "type": "string",
-          "description": "Reference to Booking. (Relationship: Booking 1:1 Review) Unique identifier for the booking associated with the review."
-        },
-        "rating": {
-          "type": "number",
-          "description": "Rating given in the review (e.g., 1-5 stars)."
-        },
-        "comment": {
-          "type": "string",
-          "description": "Text comment included in the review."
-        },
-        "images": {
-          "type": "array",
-          "description": "Array of URLs to images included with the review.",
-          "items": {
-            "type": "string"
-          }
-        },
-        "verifiedBooking": {
-          "type": "boolean",
-          "description": "Indicates whether the review is from a verified booking."
-        },
-        "createdAt": {
-          "type": "string",
-          "description": "Timestamp of when the review was created.",
-          "format": "date-time"
-        }
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "packageId": { "type": "string" },
+        "agencyId": { "type": "string" },
+        "bookingId": { "type": "string" },
+        "rating": { "type": "number", "minimum": 1, "maximum": 5 },
+        "comment": { "type": "string" },
+        "images": { "type": "array", "items": { "type": "string", "format": "uri" } },
+        "verifiedBooking": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" }
       },
-      "required": [
-        "id",
-        "userId",
-        "packageId",
-        "agencyId",
-        "bookingId",
-        "rating",
-        "comment",
-        "images",
-        "verifiedBooking",
-        "createdAt"
-      ]
+      "required": ["id", "userId", "packageId", "agencyId", "bookingId", "rating", "comment", "verifiedBooking", "createdAt"]
     },
     "Payment": {
       "$schema": "http://json-schema.org/draft-07/schema#",
@@ -409,50 +229,16 @@
       "type": "object",
       "description": "Represents a payment made for a booking.",
       "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the payment."
-        },
-        "bookingId": {
-          "type": "string",
-          "description": "Reference to Booking. (Relationship: Booking 1:1 Payment) Unique identifier for the booking associated with the payment."
-        },
-        "amount": {
-          "type": "number",
-          "description": "Amount paid."
-        },
-        "currency": {
-          "type": "string",
-          "description": "Currency of the payment."
-        },
-        "method": {
-          "type": "string",
-          "description": "Method of payment used (e.g., credit card, PayPal)."
-        },
-        "transactionId": {
-          "type": "string",
-          "description": "Transaction identifier from the payment gateway."
-        },
-        "status": {
-          "type": "string",
-          "description": "Status of the payment (e.g., pending, completed, failed)."
-        },
-        "createdAt": {
-          "type": "string",
-          "description": "Timestamp of when the payment was created.",
-          "format": "date-time"
-        }
+        "id": { "type": "string" },
+        "bookingId": { "type": "string" },
+        "amount": { "type": "number" },
+        "currency": { "type": "string" },
+        "method": { "type": "string" },
+        "transactionId": { "type": "string" },
+        "status": { "type": "string", "enum": ["pending", "completed", "failed", "refunded"] },
+        "createdAt": { "type": "string", "format": "date-time" }
       },
-      "required": [
-        "id",
-        "bookingId",
-        "amount",
-        "currency",
-        "method",
-        "transactionId",
-        "status",
-        "createdAt"
-      ]
+      "required": ["id", "bookingId", "amount", "currency", "method", "transactionId", "status", "createdAt"]
     },
     "Destination": {
       "$schema": "http://json-schema.org/draft-07/schema#",
@@ -460,68 +246,19 @@
       "type": "object",
       "description": "Represents a travel destination.",
       "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the destination."
-        },
-        "name_ar": {
-          "type": "string",
-          "description": "Name of the destination in Arabic."
-        },
-        "name_fr": {
-          "type": "string",
-          "description": "Name of the destination in French."
-        },
-        "name_en": {
-          "type": "string",
-          "description": "Name of the destination in English."
-        },
-        "country": {
-          "type": "string",
-          "description": "Country where the destination is located."
-        },
-        "wilaya": {
-          "type": "string",
-          "description": "Province where the destination is located."
-        },
-        "description": {
-          "type": "string",
-          "description": "Description of the destination."
-        },
-        "images": {
-          "type": "array",
-          "description": "Array of URLs to images of the destination.",
-          "items": {
-            "type": "string"
-          }
-        },
-        "coordinates": {
-          "type": "string",
-          "description": "Coordinates of the destination (lat, lng)."
-        },
-        "featured": {
-          "type": "boolean",
-          "description": "Indicates whether the destination is featured."
-        },
-        "createdAt": {
-          "type": "string",
-          "description": "Timestamp of when the destination was created.",
-          "format": "date-time"
-        }
+        "id": { "type": "string" },
+        "name_ar": { "type": "string" },
+        "name_fr": { "type": "string" },
+        "name_en": { "type": "string" },
+        "country": { "type": "string" },
+        "wilaya": { "type": "string" },
+        "description": { "type": "string" },
+        "images": { "type": "array", "items": { "type": "string", "format": "uri" } },
+        "coordinates": { "type": "object", "properties": { "lat": {"type": "number"}, "lng": {"type": "number"}} },
+        "featured": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" }
       },
-      "required": [
-        "id",
-        "name_ar",
-        "name_fr",
-        "name_en",
-        "country",
-        "wilaya",
-        "description",
-        "images",
-        "coordinates",
-        "featured",
-        "createdAt"
-      ]
+      "required": ["id", "name_ar", "name_fr", "name_en", "country", "description", "images", "coordinates", "featured", "createdAt"]
     },
     "BlogPost": {
       "$schema": "http://json-schema.org/draft-07/schema#",
@@ -529,48 +266,15 @@
       "type": "object",
       "description": "Represents a blog post.",
       "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the blog post."
-        },
-        "authorId": {
-          "type": "string",
-          "description": "Reference to User. (Relationship: User 1:N BlogPost) Unique identifier for the author of the blog post."
-        },
-        "title": {
-          "type": "string",
-          "description": "Title of the blog post."
-        },
-        "content": {
-          "type": "string",
-          "description": "Content of the blog post."
-        },
-        "category": {
-          "type": "string",
-          "description": "Category of the blog post."
-        },
-        "images": {
-          "type": "array",
-          "description": "Array of URLs to images included in the blog post.",
-          "items": {
-            "type": "string"
-          }
-        },
-        "publishedAt": {
-          "type": "string",
-          "description": "Timestamp of when the blog post was published.",
-          "format": "date-time"
-        }
+        "id": { "type": "string" },
+        "authorId": { "type": "string" },
+        "title": { "type": "string" },
+        "content": { "type": "string" },
+        "category": { "type": "string" },
+        "images": { "type": "array", "items": { "type": "string", "format": "uri" } },
+        "publishedAt": { "type": "string", "format": "date-time" }
       },
-      "required": [
-        "id",
-        "authorId",
-        "title",
-        "content",
-        "category",
-        "images",
-        "publishedAt"
-      ]
+      "required": ["id", "authorId", "title", "content", "category", "images", "publishedAt"]
     },
     "Wishlist": {
       "$schema": "http://json-schema.org/draft-07/schema#",
@@ -578,30 +282,12 @@
       "type": "object",
       "description": "Represents a user's wishlist of travel packages.",
       "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the wishlist item."
-        },
-        "userId": {
-          "type": "string",
-          "description": "Reference to User. (Relationship: User 1:N Wishlist) Unique identifier for the user who owns the wishlist."
-        },
-        "packageId": {
-          "type": "string",
-          "description": "Reference to Package. (Relationship: Package 1:N Wishlist) Unique identifier for the package in the wishlist."
-        },
-        "createdAt": {
-          "type": "string",
-          "description": "Timestamp of when the item was added to the wishlist.",
-          "format": "date-time"
-        }
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "packageId": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
       },
-      "required": [
-        "id",
-        "userId",
-        "packageId",
-        "createdAt"
-      ]
+      "required": ["id", "userId", "packageId", "createdAt"]
     },
     "Notification": {
       "$schema": "http://json-schema.org/draft-07/schema#",
@@ -609,51 +295,22 @@
       "type": "object",
       "description": "Represents a notification sent to a user.",
       "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the notification."
-        },
-        "userId": {
-          "type": "string",
-          "description": "Reference to User. (Relationship: User 1:N Notification) Unique identifier for the user who received the notification."
-        },
-        "type": {
-          "type": "string",
-          "description": "Type of notification (e.g., booking confirmation, payment success)."
-        },
-        "title": {
-          "type": "string",
-          "description": "Title of the notification."
-        },
-        "message": {
-          "type": "string",
-          "description": "Message content of the notification."
-        },
-        "read": {
-          "type": "boolean",
-          "description": "Indicates whether the notification has been read."
-        },
-        "createdAt": {
-          "type": "string",
-          "description": "Timestamp of when the notification was created.",
-          "format": "date-time"
-        }
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "type": { "type": "string" },
+        "title": { "type": "string" },
+        "message": { "type": "string" },
+        "read": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" }
       },
-      "required": [
-        "id",
-        "userId",
-        "type",
-        "title",
-        "message",
-        "read",
-        "createdAt"
-      ]
+      "required": ["id", "userId", "type", "title", "message", "read", "createdAt"]
     }
   },
   "auth": {
     "providers": [
       "password",
-      "anonymous"
+      "google.com",
+      "facebook.com"
     ]
   },
   "firestore": {
@@ -662,171 +319,84 @@
         "path": "/users/{userId}",
         "definition": {
           "entityName": "User",
-          "schema": {
-            "$ref": "#/backend/entities/User"
-          },
-          "description": "Stores user profile information. Path-based ownership ensures only the user can access their data.",
-          "params": [
-            {
-              "name": "userId",
-              "description": "Unique identifier for the user."
-            }
-          ]
+          "schema": { "$ref": "#/entities/User" },
+          "description": "Stores user profile information."
         }
       },
       {
         "path": "/agencies/{agencyId}",
         "definition": {
           "entityName": "Agency",
-          "schema": {
-            "$ref": "#/backend/entities/Agency"
-          },
-          "description": "Stores travel agency information. Agency documents are publicly readable but writable only by the associated user or admin.",
-          "params": [
-            {
-              "name": "agencyId",
-              "description": "Unique identifier for the agency."
-            }
-          ]
+          "schema": { "$ref": "#/entities/Agency" },
+          "description": "Stores travel agency information."
         }
       },
       {
         "path": "/packages/{packageId}",
         "definition": {
           "entityName": "Package",
-          "schema": {
-            "$ref": "#/backend/entities/Package"
-          },
-          "description": "Stores travel package information. Includes 'agencyId' for filtering packages specific to an agency, achieving authorization independence.",
-          "params": [
-            {
-              "name": "packageId",
-              "description": "Unique identifier for the package."
-            }
-          ]
+          "schema": { "$ref": "#/entities/Package" },
+          "description": "Stores travel package information."
         }
       },
       {
         "path": "/bookings/{bookingId}",
         "definition": {
           "entityName": "Booking",
-          "schema": {
-            "$ref": "#/backend/entities/Booking"
-          },
-          "description": "Stores booking information. Includes 'userId' and 'agencyId' for filtering bookings by user and agency, enabling authorization independence.",
-          "params": [
-            {
-              "name": "bookingId",
-              "description": "Unique identifier for the booking."
-            }
-          ]
+          "schema": { "$ref": "#/entities/Booking" },
+          "description": "Stores booking information."
         }
       },
       {
         "path": "/reviews/{reviewId}",
         "definition": {
           "entityName": "Review",
-          "schema": {
-            "$ref": "#/backend/entities/Review"
-          },
-          "description": "Stores review information.  Reviews can be filtered by userId, agencyId and packageId",
-          "params": [
-            {
-              "name": "reviewId",
-              "description": "Unique identifier for the review."
-            }
-          ]
+          "schema": { "$ref": "#/entities/Review" },
+          "description": "Stores review information."
         }
       },
       {
         "path": "/payments/{paymentId}",
         "definition": {
           "entityName": "Payment",
-          "schema": {
-            "$ref": "#/backend/entities/Payment"
-          },
-          "description": "Stores payment information related to bookings.",
-          "params": [
-            {
-              "name": "paymentId",
-              "description": "Unique identifier for the payment."
-            }
-          ]
+          "schema": { "$ref": "#/entities/Payment" },
+          "description": "Stores payment information related to bookings."
         }
       },
       {
         "path": "/destinations/{destinationId}",
         "definition": {
           "entityName": "Destination",
-          "schema": {
-            "$ref": "#/backend/entities/Destination"
-          },
-          "description": "Stores destination information. Publicly readable.",
-          "params": [
-            {
-              "name": "destinationId",
-              "description": "Unique identifier for the destination."
-            }
-          ]
+          "schema": { "$ref": "#/entities/Destination" },
+          "description": "Stores destination information."
         }
       },
       {
         "path": "/blog_posts/{blogPostId}",
         "definition": {
           "entityName": "BlogPost",
-          "schema": {
-            "$ref": "#/backend/entities/BlogPost"
-          },
-          "description": "Stores blog post information. Publicly readable, writable by admins.",
-          "params": [
-            {
-              "name": "blogPostId",
-              "description": "Unique identifier for the blog post."
-            }
-          ]
+          "schema": { "$ref": "#/entities/BlogPost" },
+          "description": "Stores blog post information."
         }
       },
       {
         "path": "/users/{userId}/wishlist/{wishlistId}",
         "definition": {
           "entityName": "Wishlist",
-          "schema": {
-            "$ref": "#/backend/entities/Wishlist"
-          },
-          "description": "Stores wishlist items for each user. Path-based ownership ensures only the user can access their wishlist.",
-          "params": [
-            {
-              "name": "userId",
-              "description": "Unique identifier for the user."
-            },
-            {
-              "name": "wishlistId",
-              "description": "Unique identifier for the wishlist item."
-            }
-          ]
+          "schema": { "$ref": "#/entities/Wishlist" },
+          "description": "Stores wishlist items for each user."
         }
       },
       {
         "path": "/users/{userId}/notifications/{notificationId}",
         "definition": {
           "entityName": "Notification",
-          "schema": {
-            "$ref": "#/backend/entities/Notification"
-          },
-          "description": "Stores notifications for each user. Path-based ownership ensures only the user can access their notifications.",
-          "params": [
-            {
-              "name": "userId",
-              "description": "Unique identifier for the user."
-            },
-            {
-              "name": "notificationId",
-              "description": "Unique identifier for the notification."
-            }
-          ]
+          "schema": { "$ref": "#/entities/Notification" },
+          "description": "Stores notifications for each user."
         }
       }
-    ],
-    "reasoning": "The Firestore data structure is designed to ensure security, scalability, and ease of management for the travel booking platform. It prioritizes authorization independence, clarity of intent, and follows the DBAC (Database-Based Access Control) principle. The structure facilitates secure list operations (QAPs) and maintains data integrity through denormalization and explicit state modeling.\n\nAuthorization Independence:\nAuthorization independence is achieved through denormalization. Specifically, for collaborative data like packages and bookings, the `agencyId` is duplicated in the `/bookings` collection, allowing rules to be written without needing to perform costly `get()` operations to verify agency ownership. For user-owned data, the path-based ownership `/users/{userId}/wishlist/{wishlistId}` is used.\n\nQAPs Support:\n*   Segregation: Collections with different access needs are segregated. For example, user profiles are stored in `/users/{userId}` ensuring that only the user can access their data. Publicly accessible destinations are stored in the `/destinations` collection.\n*   Membership Model: Collaborative access is managed using the explicit `agencyId` field in the `/packages` collection, which helps in filtering the packages specific to an agency.\n\nThe design also employs structural segregation by using dedicated collections for entities with distinct security postures. For instance, user-specific data resides within `/users/{userId}/...` paths, while agency-owned packages are directly under `/packages` but include the `agencyId` field for filtering. This ensures homogeneous security requirements within each collection.\n\nInvariants:\nThe structure supports integrity by enforcing path-based ownership for user-specific data and explicit `agencyId` on agency-related entities. Timestamps (`createdAt`, `updatedAt`) are included in relevant documents to track changes."
+    ]
   }
 }
+
+    
