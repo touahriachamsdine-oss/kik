@@ -54,7 +54,7 @@ export function Footer() {
       </div>
       <div className="bg-muted text-muted-foreground py-4">
         <div className="container text-center text-sm">
-          © {new Date().getFullYear()} رحلتي Trip Planner. All Rights Reserved.
+          © {new Date().getFullYear()} rahalati+. All Rights Reserved.
         </div>
       </div>
     </footer>

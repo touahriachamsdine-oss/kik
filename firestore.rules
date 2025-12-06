@@ -29,9 +29,13 @@ service cloud.firestore {
     function isAdmin(userId) {
       return getUserData(userId).role == 'admin';
     }
-
-    function isAgencyOwner(agencyDoc) {
-      return isSignedIn() && agencyDoc.data.userId == request.auth.uid;
+    
+    function isAgencyOwnerOfPackage(package) {
+      return isAgency(request.auth.uid) && package.agencyId == get(/databases/$(database)/documents/agencies/$(request.auth.uid)).id;
+    }
+    
+    function isAgencyOwner(agencyId) {
+      return isAgency(request.auth.uid) && agencyId == request.auth.uid;
     }
 
     // -------------------------------------------------------------------------
@@ -47,45 +51,46 @@ service cloud.firestore {
       // Publicly readable, writable only by the owner agency or admin.
       allow get, list: if isSignedIn();
       allow create: if isAgency(request.auth.uid);
-      allow update: if isAdmin(request.auth.uid) || isAgencyOwner(resource);
+      allow update: if isAdmin(request.auth.uid) || isAgencyOwner(agencyId);
       allow delete: if isAdmin(request.auth.uid);
     }
 
     match /packages/{packageId} {
       // Publicly readable. Writable by owning agency or admin.
       allow read: if true;
-      allow create: if isAgency(request.auth.uid) && request.resource.data.agencyId == get(/databases/$(database)/documents/users/$(request.auth.uid)).data.agencyId;
-      allow update, delete: if isAdmin(request.auth.uid) || (isAgency(request.auth.uid) && resource.data.agencyId == get(/databases/$(database)/documents/users/$(request.auth.uid)).data.agencyId);
+      allow create: if isAgency(request.auth.uid);
+      allow update, delete: if isAdmin(request.auth.uid) || isAgencyOwnerOfPackage(resource.data);
     }
 
     match /bookings/{bookingId} {
-      // Readable by traveler, agency, or admin.
+      // Readable by traveler who owns it, agency who owns the package, or admin.
+      allow get: if isAdmin(request.auth.uid) || isOwner(resource.data.userId) || isAgencyOwnerOfPackage(get(/databases/$(database)/documents/packages/$(resource.data.packageId)).data);
       // Creatable by the traveler.
-      // Updatable (e.g., status change) by agency or admin.
+      allow create: if isTraveler(request.auth.uid) && isOwner(request.resource.data.userId);
+      // Updatable by agency or admin.
+      allow update: if isAdmin(request.auth.uid) || isAgencyOwnerOfPackage(get(/databases/$(database)/documents/packages/$(resource.data.packageId)).data);
       // Deletable by traveler (cancellation) or admin.
-      allow get: if isAdmin(request.auth.uid) || isOwner(resource.data.userId) || (isAgency(request.auth.uid) && resource.data.agencyId == get(/databases/$(database)/documents/users/$(request.auth.uid)).data.agencyId);
-      allow create: if isOwner(request.resource.data.userId);
-      allow update: if isAdmin(request.auth.uid) || (isAgency(request.auth.uid) && resource.data.agencyId == get(/databases/$(database)/documents/users/$(request.auth.uid)).data.agencyId);
       allow delete: if isAdmin(request.auth.uid) || isOwner(resource.data.userId);
     }
 
     match /reviews/{reviewId} {
       // Publicly readable.
-      // Creatable by a traveler who has a completed booking for the package.
-      // Updatable/Deletable by the review author or admin.
-      function hasCompletedBooking() {
-        return exists(/databases/$(database)/documents/bookings/$(request.resource.data.bookingId)) &&
-               get(/databases/$(database)/documents/bookings/$(request.resource.data.bookingId)).data.userId == request.auth.uid &&
-               get(/databases/$(database)/documents/bookings/$(request.resource.data.bookingId)).data.status == 'completed';
-      }
       allow read: if true;
-      allow create: if isOwner(request.resource.data.userId) && hasCompletedBooking();
+      // Creatable by a traveler who has a completed booking for the package.
+      function hasCompletedBooking() {
+        let booking = get(/databases/$(database)/documents/bookings/$(request.resource.data.bookingId)).data;
+        return booking.userId == request.auth.uid && booking.status == 'completed';
+      }
+      allow create: if isTraveler(request.auth.uid) && isOwner(request.resource.data.userId) && hasCompletedBooking();
+      // Updatable/Deletable by the review author or admin.
       allow update, delete: if isAdmin(request.auth.uid) || isOwner(resource.data.userId);
     }
 
     match /payments/{paymentId} {
-      // Highly restricted. Server-side (admin) logic only.
-      allow read, write: if isAdmin(request.auth.uid);
+      // Readable by user who made booking, agency of booking, or admin
+      allow read: if isAdmin(request.auth.uid) || isOwner(get(/databases/$(database)/documents/bookings/$(resource.data.bookingId)).data.userId) || isAgencyOwnerOfPackage(get(/databases/$(database)/documents/packages/$(get(/databases/$(database)/documents/bookings/$(resource.data.bookingId)).data.packageId)).data);
+      // Writable only by server-side logic (or admin for emergencies)
+      allow write: if isAdmin(request.auth.uid);
     }
 
     match /destinations/{destinationId} {
@@ -95,9 +100,11 @@ service cloud.firestore {
     }
 
     match /blog_posts/{blogPostId} {
-      // Publicly readable, admin/author writable.
+      // Publicly readable.
       allow read: if true;
-      allow create, update, delete: if isAdmin(request.auth.uid) || isOwner(resource.data.authorId);
+      // Creatable/Writable by owning agency or admin.
+      allow create: if isAgency(request.auth.uid);
+      allow update, delete: if isAdmin(request.auth.uid) || (isAgency(request.auth.uid) && resource.data.authorId == request.auth.uid);
     }
 
     match /users/{userId}/wishlist/{wishlistId} {
@@ -111,5 +118,3 @@ service cloud.firestore {
     }
   }
 }
-
-    
