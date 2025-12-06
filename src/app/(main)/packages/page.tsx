@@ -1,5 +1,6 @@
+
 import { PackageCard } from "@/components/package-card";
-import { travelPackages } from "@/lib/placeholder-data";
+import { getPackages } from "@/lib/data";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -7,7 +8,9 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
 
-export default function PackagesPage() {
+export default async function PackagesPage() {
+  const travelPackages = await getPackages();
+  
   return (
     <div className="container max-w-7xl py-12">
       <div className="text-center mb-12">

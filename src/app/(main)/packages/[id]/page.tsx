@@ -1,26 +1,26 @@
+
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
-import { getPackageById, getAgencyById, getReviewsForPackage } from '@/lib/placeholder-data';
+import { getPackageById, getAgencyById, getReviewsForPackage } from '@/lib/data';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { RatingStars } from '@/components/rating-stars';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
-import { MapPin, Calendar, Users, Check, X, Building, Award } from 'lucide-react';
+import { MapPin, Calendar, Check, X, Building, Award } from 'lucide-react';
 
-export default function PackageDetailPage({ params }: { params: { id: string } }) {
-  const travelPackage = getPackageById(params.id);
+export default async function PackageDetailPage({ params }: { params: { id: string } }) {
+  const travelPackage = await getPackageById(params.id);
 
   if (!travelPackage) {
     notFound();
   }
 
-  const agency = getAgencyById(travelPackage.agencyId);
-  const reviews = getReviewsForPackage(travelPackage.id);
+  const agency = await getAgencyById(travelPackage.agencyId);
+  const reviews = await getReviewsForPackage(travelPackage.id);
 
   const galleryImages = travelPackage.images.map(id => PlaceHolderImages.find(img => img.id === id)).filter(Boolean);
 
@@ -111,7 +111,7 @@ export default function PackageDetailPage({ params }: { params: { id: string } }
                     return(
                       <div key={review.id} className="flex gap-4">
                         <Avatar>
-                          <AvatarImage src={avatar?.imageUrl} alt={review.user.name} data-ai-hint={avatar?.imageHint}/>
+                          <AvatarImage src={review.user.avatarUrl || avatar?.imageUrl} alt={review.user.name} data-ai-hint={avatar?.imageHint}/>
                           <AvatarFallback>{review.user.name.charAt(0)}</AvatarFallback>
                         </Avatar>
                         <div>
@@ -119,7 +119,7 @@ export default function PackageDetailPage({ params }: { params: { id: string } }
                             <p className="font-semibold">{review.user.name}</p>
                             <RatingStars rating={review.rating}/>
                           </div>
-                          <p className="text-sm text-muted-foreground">{new Date(review.date).toLocaleDateString()}</p>
+                          <p className="text-sm text-muted-foreground">{review.createdAt.toDate().toLocaleDateString()}</p>
                           <p className="mt-2 text-foreground/80">{review.comment}</p>
                         </div>
                       </div>
@@ -163,12 +163,12 @@ export default function PackageDetailPage({ params }: { params: { id: string } }
                 <CardTitle className="text-xl font-headline flex items-center gap-2"><Building className="h-5 w-5 text-primary"/>Agency</CardTitle>
               </CardHeader>
               <CardContent className="flex items-center gap-4">
-                {/* Agency logo would go here */}
                 <Avatar className="h-16 w-16">
-                  <AvatarFallback>{agency.name.substring(0, 2)}</AvatarFallback>
+                   <AvatarImage src={agency.logo} alt={agency.businessName}/>
+                  <AvatarFallback>{agency.businessName.substring(0, 2)}</AvatarFallback>
                 </Avatar>
                 <div>
-                  <p className="font-semibold">{agency.name}</p>
+                  <p className="font-semibold">{agency.businessName}</p>
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <Award className="h-4 w-4"/>
                     <span>{agency.rating} average rating</span>

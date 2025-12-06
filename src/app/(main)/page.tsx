@@ -1,19 +1,24 @@
+
 import Image from 'next/image';
 import Link from 'next/link';
 import { Search, MapPin, Calendar, Users, DollarSign, ChevronRight, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { PackageCard } from '@/components/package-card';
-import { travelPackages, reviews } from '@/lib/placeholder-data';
+import { getPackages, getReviewsForPackage } from '@/lib/data';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { RatingStars } from '@/components/rating-stars';
+import { reviews as placeholderReviews } from '@/lib/placeholder-data';
 import { Badge } from '@/components/ui/badge';
 
-export default function HomePage() {
+
+export default async function HomePage() {
   const heroImage = PlaceHolderImages.find(img => img.id === 'hero-background');
-  const featuredPackages = travelPackages.filter(p => p.featured).slice(0, 3);
+  const featuredPackages = await getPackages({ featured: true });
+  // For now, we'll keep using placeholder reviews for the homepage testimonials section
+  const reviews = placeholderReviews.slice(0,3);
 
   return (
     <div className="flex flex-col">

@@ -1,3 +1,6 @@
+
+import { Timestamp } from 'firebase/firestore';
+
 export type TravelPackage = {
   id: string;
   agencyId: string;
@@ -13,24 +16,30 @@ export type TravelPackage = {
   excludes: string[];
   images: string[];
   featured?: boolean;
+  status: 'active' | 'inactive' | 'draft';
+  createdAt: string | Timestamp; // Allow string for serialized, Timestamp for Firestore
+  updatedAt: string | Timestamp;
 };
 
 export type Agency = {
   id: string;
-  name: string;
-  logoUrl: string;
+  userId: string;
+  businessName: string;
+  logo: string;
   rating: number;
   totalReviews: number;
+  verified: boolean;
 };
 
 export type Review = {
   id: string;
   packageId: string;
+  userId: string;
   user: {
     name: string;
     avatarUrl: string;
   };
   rating: number;
   comment: string;
-  date: string;
+  createdAt: Date; // Use Date object for easier handling in components
 };
